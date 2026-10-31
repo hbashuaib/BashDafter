@@ -52,3 +52,16 @@ class CustomerViewSet(viewsets.ModelViewSet):
             "purchases": purchases,
             "payments": payments
         })
+        
+    @action(detail=True, methods=["get"])
+    def stats(self, request, pk=None):
+        customer = self.get_object()
+
+        return Response({
+            "customer": customer.name,
+            "purchase_count": customer.purchases.count(),
+            "payment_count": customer.payments.count(),
+            "total_purchases": customer.total_purchases,
+            "total_payments": customer.total_payments,
+            "balance": customer.balance,
+        })

@@ -11,6 +11,9 @@ class PurchaseItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = PurchaseItem
         fields = "__all__"
+        read_only_fields = (
+            "total_price",
+        )
 
 
 class PurchaseSerializer(serializers.ModelSerializer):
