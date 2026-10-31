@@ -30,8 +30,14 @@ class PurchaseItem(models.Model):
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
     
     def save(self, *args, **kwargs):
-        self.total_price = self.quantity * self.unit_price
+        self.total_price = (self.quantity * self.unit_price)
         super().save(*args, **kwargs)
+        self.purchase.update_total()
+    
+    def delete(self, *args, **kwargs):
+        purchase = self.purchase
+        super().delete(*args, **kwargs)
+        purchase.update_total()
 
     def __str__(self):
         return self.item_name
