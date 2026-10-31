@@ -6,15 +6,10 @@ from .serializers import PaymentSerializer
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
-
     serializer_class = PaymentSerializer
-
-    permission_classes = [
-        IsAuthenticated
-    ]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-
         return Payment.objects.filter(
             customer__shop=self.request.user.shop
         )

@@ -8,15 +8,10 @@ from .serializers import PurchaseSerializer
 
 
 class PurchaseViewSet(viewsets.ModelViewSet):
-
     serializer_class = PurchaseSerializer
-
-    permission_classes = [
-        IsAuthenticated
-    ]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-
         return Purchase.objects.filter(
             customer__shop=self.request.user.shop
         )

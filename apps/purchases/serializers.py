@@ -15,10 +15,7 @@ class PurchaseItemSerializer(serializers.ModelSerializer):
 
 class PurchaseSerializer(serializers.ModelSerializer):
 
-    items = PurchaseItemSerializer(
-        many=True,
-        read_only=True
-    )
+    items = PurchaseItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Purchase
