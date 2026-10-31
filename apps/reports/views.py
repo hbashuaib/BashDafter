@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.customers.models import Customer
+from apps.purchases.models import Purchase
+from apps.payments.models import Payment
 
 
 class CustomerSummaryReportView(APIView):
@@ -43,3 +45,51 @@ class TopDebtorsReportView(APIView):
         data = sorted(data, key=lambda x: x["balance"], reverse=True)
 
         return Response(data[:10])
+
+class RecentTransactionsReportView(APIView):
+
+    permission_classes = [
+        IsAuthenticated
+    ]
+
+    def get(self, request):
+
+        shop = request.user.shop
+
+        purchases = Purchase.objects.filter(
+            customer__shop=shop
+        ).order_by("-created_at")[:10]
+
+        payments = Payment.objects.filter(
+            customer__shop=shop
+        ).order_by("-created_at")[:10]
+
+        transactions = []
+
+        for purchase in purchases:
+
+            transactions.append({
+                "type": "purchase",
+                "customer": purchase.customer.name,
+                "amount": purchase.total_amount,
+                "date": purchase.purchase_date,
+            })
+
+        for payment in payments:
+
+            transactions.append({
+                "type": "payment",
+                "customer": payment.customer.name,
+                "amount": payment.amount,
+                "date": payment.payment_date,
+            })
+
+        transactions = sorted(
+            transactions,
+            key=lambda x: x["date"],
+            reverse=True
+        )
+
+        return Response(
+            transactions[:20]
+        )

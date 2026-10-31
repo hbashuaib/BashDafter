@@ -6,9 +6,6 @@ from .views import CustomerViewSet
 
 router = DefaultRouter()
 
-router.register(
-    r"customers",
-    CustomerViewSet
-)
+router.register(r"customers", CustomerViewSet)
 
 urlpatterns = router.urls
