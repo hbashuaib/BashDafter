@@ -5,13 +5,15 @@ from apps.customers.models import Customer
 
 
 class Purchase(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="purchases")
+    customer = models.ForeignKey(
+        Customer, on_delete=models.CASCADE, related_name="purchases"
+    )
     purchase_date = models.DateField()
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def update_total(self):
         total = self.items.aggregate(total=Sum("total_price"))["total"] or 0
         self.total_amount = total
@@ -22,18 +24,26 @@ class Purchase(models.Model):
 
 
 class PurchaseItem(models.Model):
-
-    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name="items")
+    purchase = models.ForeignKey(
+        Purchase, on_delete=models.CASCADE, related_name="items"
+    )
+    product = models.ForeignKey(
+        "products.Product",
+        on_delete=models.PROTECT,
+        related_name="purchase_items",
+        null=True,
+        blank=True,
+    )
     item_name = models.CharField(max_length=200)
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)
     unit_price = models.DecimalField(max_digits=12, decimal_places=2)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
-    
+
     def save(self, *args, **kwargs):
-        self.total_price = (self.quantity * self.unit_price)
+        self.total_price = self.quantity * self.unit_price
         super().save(*args, **kwargs)
         self.purchase.update_total()
-    
+
     def delete(self, *args, **kwargs):
         purchase = self.purchase
         super().delete(*args, **kwargs)

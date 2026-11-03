@@ -1,17 +1,16 @@
 from django.contrib import admin
 
-from .models import Purchase
-from .models import PurchaseItem
+from .models import Purchase, PurchaseItem
 
 
 class PurchaseItemInline(admin.TabularInline):
     model = PurchaseItem
     extra = 1
+    autocomplete_fields = ("product",)
 
 
 @admin.register(Purchase)
 class PurchaseAdmin(admin.ModelAdmin):
-
     list_display = (
         "id",
         "customer",
@@ -19,6 +18,4 @@ class PurchaseAdmin(admin.ModelAdmin):
         "total_amount",
     )
 
-    inlines = [
-        PurchaseItemInline,
-    ]
+    inlines = (PurchaseItemInline,)

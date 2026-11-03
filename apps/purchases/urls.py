@@ -2,7 +2,7 @@
 
 from rest_framework.routers import DefaultRouter
 
-from .views import PurchaseViewSet, PurchaseItemViewSet
+from .views import PurchaseItemViewSet, PurchaseViewSet
 
 router = DefaultRouter()
 
