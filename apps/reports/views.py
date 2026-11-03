@@ -11,7 +11,6 @@ class CustomerSummaryReportView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
         customers = Customer.objects.filter(shop=request.user.shop)
         data = []
 
@@ -53,7 +52,6 @@ class RecentTransactionsReportView(APIView):
     ]
 
     def get(self, request):
-
         shop = request.user.shop
 
         purchases = Purchase.objects.filter(
@@ -67,7 +65,6 @@ class RecentTransactionsReportView(APIView):
         transactions = []
 
         for purchase in purchases:
-
             transactions.append({
                 "type": "purchase",
                 "customer": purchase.customer.name,
@@ -76,7 +73,6 @@ class RecentTransactionsReportView(APIView):
             })
 
         for payment in payments:
-
             transactions.append({
                 "type": "payment",
                 "customer": payment.customer.name,
@@ -93,3 +89,39 @@ class RecentTransactionsReportView(APIView):
         return Response(
             transactions[:20]
         )
+
+
+class CustomerStatementView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, customer_id):
+        customer = Customer.objects.get(id=customer_id, shop=request.user.shop,)
+        transactions = []
+        purchases = Purchase.objects.filter(customer=customer)
+        payments = Payment.objects.filter(customer=customer)
+
+        for purchase in purchases:
+            transactions.append({
+                "type": "purchase",
+                "date": purchase.purchase_date,
+                "amount": float(
+                    purchase.total_amount
+                ),
+            })
+
+        for payment in payments:
+            transactions.append({
+                "type": "payment",
+                "date": payment.payment_date,
+                "amount": float(
+                    payment.amount
+                ),
+            })
+
+        transactions = sorted(transactions, key=lambda x: x["date"])
+
+        return Response({
+            "customer": customer.name,
+            "balance": customer.balance,
+            "transactions": transactions
+        })
