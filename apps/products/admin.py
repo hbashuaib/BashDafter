@@ -1,11 +1,10 @@
 from django.contrib import admin
 
 from .models import (
-    Unit,
     Category,
     Product,
+    Unit,
 )
-
 
 admin.site.register(Unit)
 admin.site.register(Category)
