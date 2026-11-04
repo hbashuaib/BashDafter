@@ -1,7 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum
 
 from apps.customers.models import Customer
+from apps.inventory.models import InventoryTransaction
 
 
 class Purchase(models.Model):
@@ -40,13 +42,48 @@ class PurchaseItem(models.Model):
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         self.total_price = self.quantity * self.unit_price
         super().save(*args, **kwargs)
+
+        if is_new and self.product:
+            if self.product.current_stock < self.quantity:
+                raise ValidationError(
+                    f"Not enough stock available for "
+                    f"{self.product.name}."
+                )
+
+            self.product.current_stock -= self.quantity
+            
+            InventoryTransaction.objects.create(
+                product=self.product,
+                transaction_type="SALE",
+                quantity=self.quantity,
+                reference=f"Sale #{self.purchase.id}",
+            )
+
+            self.product.save(
+                update_fields=[
+                    "current_stock",
+                ]
+            )
+
         self.purchase.update_total()
 
     def delete(self, *args, **kwargs):
         purchase = self.purchase
+
+        if self.product:
+            self.product.current_stock += self.quantity            
+
+            self.product.save(
+                update_fields=[
+                    "current_stock",
+                ]
+            )
+
         super().delete(*args, **kwargs)
+
         purchase.update_total()
 
     def __str__(self):

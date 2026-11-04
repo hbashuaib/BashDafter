@@ -29,11 +29,19 @@ class Product(models.Model):
     cost_price = models.DecimalField(max_digits=12, decimal_places=2, default=0,)
     selling_price = models.DecimalField(max_digits=12, decimal_places=2, default=0,)
     minimum_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0,)
+    current_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0,)
     has_expiry = models.BooleanField(default=False,)
     expiry_date = models.DateField(blank=True, null=True,)
     is_active = models.BooleanField(default=True,)
     created_at = models.DateTimeField(auto_now_add=True,)
     updated_at = models.DateTimeField(auto_now=True,)
+    
+    @property
+    def is_low_stock(self):
+        return (
+            self.current_stock
+            <= self.minimum_stock
+        )
 
     def __str__(self):
         return self.name
