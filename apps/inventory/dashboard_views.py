@@ -1,5 +1,4 @@
-from django.db.models import DecimalField, F, Sum
-from django.db.models.functions import Coalesce
+from django.db.models import F
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
