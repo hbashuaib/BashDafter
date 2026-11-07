@@ -1,3 +1,7 @@
+from drf_spectacular.utils import (
+    extend_schema,
+)
+from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.parsers import (
     FormParser,
@@ -7,7 +11,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import UserProfileSerializer
+from apps.auditlog.utils import create_audit_log
+
+from .serializers import (
+    ChangePasswordSerializer,
+    UserProfileSerializer,
+)
 
 
 class HealthCheckView(APIView):
@@ -56,4 +65,61 @@ class UploadProfileImageView(APIView):
                     "request": request,
                 },
             ).data
+        )
+        
+@extend_schema(request=ChangePasswordSerializer,responses={200: dict, 400: dict,},)
+class ChangePasswordView(APIView,):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request,):
+        serializer = ChangePasswordSerializer(data=request.data,)
+        serializer.is_valid(raise_exception=True,)
+        
+        if (
+            serializer.validated_data["old_password"]
+            == serializer.validated_data["new_password"]
+        ):
+            return Response(
+                {
+                    "detail":
+                    "New password must be different from current password."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        user = request.user
+
+        if not user.check_password(
+            serializer.validated_data["old_password"]
+        ):
+            return Response(
+                {
+                    "detail":
+                    "Old password is incorrect."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(
+            serializer.validated_data["new_password"]
+        )
+
+        user.save()
+
+        create_audit_log(
+            user=user,
+            action="PASSWORD_CHANGE",
+            model_name="User",
+            object_id=user.id,
+            description=(
+                f"Changed password for "
+                f"{user.username}"
+            ),
+        )
+
+        return Response(
+            {
+                "message":
+                "Password changed successfully."
+            }
         )

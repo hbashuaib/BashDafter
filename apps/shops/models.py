@@ -3,7 +3,7 @@ from django.db import models
 
 
 class Shop(models.Model):
-    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="shop")
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="owned_shop")
     name = models.CharField(max_length=200)
     phone = models.CharField(max_length=20)
     address = models.TextField(blank=True)
