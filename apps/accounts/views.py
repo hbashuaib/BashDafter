@@ -10,6 +10,8 @@ from rest_framework.parsers import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.auditlog.utils import create_audit_log
 
@@ -123,3 +125,28 @@ class ChangePasswordView(APIView,):
                 "Password changed successfully."
             }
         )
+        
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer,):
+    @classmethod
+    def get_token(cls, user,):
+        token = super().get_token(user)
+
+        return token
+
+    def validate(self, attrs,):
+        data = super().validate(attrs)
+
+        create_audit_log(
+            user=self.user,
+            action="LOGIN",
+            model_name="User",
+            object_id=self.user.id,
+            description=(
+                f"{self.user.username} logged in"
+            ),
+        )
+
+        return data
+
+class CustomTokenObtainPairView(TokenObtainPairView,):
+    serializer_class = CustomTokenObtainPairSerializer

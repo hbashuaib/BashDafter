@@ -1,19 +1,30 @@
 from django.db.models import Sum
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.permissions import (
+    IsCashierOrAbove,
+)
 from apps.customers.models import Customer
 from apps.payments.models import Payment
 from apps.purchases.models import Purchase
 
 
 class DashboardView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsCashierOrAbove,)
 
     def get(self, request):
+        if not request.user.shop:
+            return Response(
+                {
+                    "detail":
+                    "No shop assigned."
+                },
+                status=400,
+            )
+
         shop = request.user.shop
-        customer_count = Customer.objects.filter(shop=shop).count()
+        customer_count = Customer.objects.filter(shop=shop, is_active=True,).count()
         total_purchases = Purchase.objects.filter(customer__shop=shop).aggregate(
             total=Sum("total_amount")
         )["total"] or 0
@@ -23,7 +34,7 @@ class DashboardView(APIView):
         )["total"] or 0
 
         total_balance = (total_purchases - total_payments)
-        customers = Customer.objects.filter(shop=shop)
+        customers = Customer.objects.filter(shop=shop, is_active=True,)
         
         top_debtors = []
 

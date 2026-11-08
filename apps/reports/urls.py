@@ -1,9 +1,11 @@
 from django.urls import path
 
 from .views import (
-        CustomerSummaryReportView, TopDebtorsReportView, 
-        RecentTransactionsReportView, CustomerStatementView
-    )
+        CustomerStatementView,
+        CustomerSummaryReportView,
+        RecentTransactionsReportView,
+        TopDebtorsReportView,
+)
 
 urlpatterns = [
     path("reports/customer-summary/", CustomerSummaryReportView.as_view(), name="customer-summary-report",),

@@ -1,17 +1,20 @@
-from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.accounts.permissions import (
+    IsCashierOrAbove,
+)
 from apps.customers.models import Customer
 from apps.payments.models import Payment
 from apps.purchases.models import Purchase
 
 
 class CustomerSummaryReportView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsCashierOrAbove,)
 
     def get(self, request):
-        customers = Customer.objects.filter(shop=request.user.shop)
+        customers = Customer.objects.filter(shop=request.user.shop, is_active=True,)
         data = []
 
         for customer in customers:
@@ -30,10 +33,10 @@ class CustomerSummaryReportView(APIView):
 
 
 class TopDebtorsReportView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsCashierOrAbove,)
 
     def get(self, request):
-        customers = Customer.objects.filter(shop=request.user.shop)
+        customers = Customer.objects.filter(shop=request.user.shop, is_active=True,)
         data = []
 
         for customer in customers:
@@ -51,9 +54,17 @@ class TopDebtorsReportView(APIView):
 
 
 class RecentTransactionsReportView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsCashierOrAbove,)
 
     def get(self, request):
+        if not request.user.shop:
+            return Response(
+                {
+                    "detail": "No shop assigned."
+                },
+                status=400,
+            )
+        
         shop = request.user.shop
 
         purchases = Purchase.objects.filter(customer__shop=shop).order_by(
@@ -92,13 +103,10 @@ class RecentTransactionsReportView(APIView):
 
 
 class CustomerStatementView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsCashierOrAbove,)
 
     def get(self, request, customer_id):
-        customer = Customer.objects.get(
-            id=customer_id,
-            shop=request.user.shop,
-        )
+        customer = get_object_or_404(Customer, id=customer_id, shop=request.user.shop, is_active=True,)
         transactions = []
         purchases = Purchase.objects.filter(customer=customer)
         payments = Payment.objects.filter(customer=customer)
