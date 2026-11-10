@@ -115,7 +115,27 @@ class ProductViewSet(viewsets.ModelViewSet):
                 f"{product_name}"
             ),
         )
-        
+    
+    @action(detail=False, methods=["get"],)
+    def barcode(self, request):
+        barcode = request.GET.get("barcode")
+
+        product = get_object_or_404(
+            Product,
+            shop=request.user.shop,
+            barcode=barcode,
+            is_active=True,
+        )
+
+        serializer = self.get_serializer(
+            product
+        )
+
+        return Response(
+            serializer.data
+        )
+    
+    
     @action(detail=False, methods=["get"],)
     def inactive(self, request,):
         products = Product.objects.filter(
@@ -156,3 +176,5 @@ class ProductViewSet(viewsets.ModelViewSet):
                     "Product restored successfully"
             }
         )
+        
+    
