@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -177,4 +180,22 @@ class ProductViewSet(viewsets.ModelViewSet):
             }
         )
         
+    @action(detail=False, methods=["get"])
+    def expiring(self, request):
+        today = timezone.now().date()
+
+        products = Product.objects.filter(
+            shop=request.user.shop,
+            is_active=True,
+            has_expiry=True,
+            expiry_date__isnull=False,
+            expiry_date__lte=today + timedelta(days=30),
+        )
+
+        serializer = self.get_serializer(
+            products,
+            many=True,
+        )
+
+        return Response(serializer.data)
     
