@@ -37,7 +37,9 @@ class PurchaseItemSerializer(serializers.ModelSerializer):
 
 
 class PurchaseSerializer(serializers.ModelSerializer):
-    items = PurchaseItemSerializer(many=True, read_only=True)
+    items = PurchaseItemSerializer(many=True, read_only=True,)
+    customer_name = serializers.CharField(source="customer.name", read_only=True,)
+    shop_name = serializers.CharField(source="customer.shop.name", read_only=True,)
 
     class Meta:
         model = Purchase

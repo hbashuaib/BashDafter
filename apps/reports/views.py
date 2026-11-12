@@ -134,6 +134,8 @@ class CustomerStatementView(APIView):
         return Response(
             {
                 "customer": customer.name,
+                "phone": customer.phone,
+                "shop_name": customer.shop.name,
                 "balance": customer.balance,
                 "transactions": transactions,
             }
