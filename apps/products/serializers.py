@@ -32,6 +32,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = "__all__"
+        read_only_fields = ("shop",)
         
     def get_total_sold(self, obj):
         return (
