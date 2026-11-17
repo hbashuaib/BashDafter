@@ -54,7 +54,17 @@ class TopDebtorsReportView(APIView):
                 }
             )
 
-        data = sorted(data, key=lambda x: x["balance"], reverse=True)
+        data = sorted(
+            data,
+            key=lambda x: x["balance"],
+            reverse=True,
+        )
+
+        for index, customer in enumerate(
+            data,
+            start=1,
+        ):
+            customer["rank"] = index
 
         return Response(data[:10])
 
