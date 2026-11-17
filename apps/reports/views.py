@@ -14,7 +14,10 @@ class CustomerSummaryReportView(APIView):
     permission_classes = (IsCashierOrAbove,)
 
     def get(self, request):
-        customers = Customer.objects.filter(shop=request.user.shop, is_active=True,)
+        customers = Customer.objects.filter(
+            shop=request.user.shop,
+            is_active=True,
+        )
         data = []
 
         for customer in customers:
@@ -36,7 +39,10 @@ class TopDebtorsReportView(APIView):
     permission_classes = (IsCashierOrAbove,)
 
     def get(self, request):
-        customers = Customer.objects.filter(shop=request.user.shop, is_active=True,)
+        customers = Customer.objects.filter(
+            shop=request.user.shop,
+            is_active=True,
+        )
         data = []
 
         for customer in customers:
@@ -59,12 +65,10 @@ class RecentTransactionsReportView(APIView):
     def get(self, request):
         if not request.user.shop:
             return Response(
-                {
-                    "detail": "No shop assigned."
-                },
+                {"detail": "No shop assigned."},
                 status=400,
             )
-        
+
         shop = request.user.shop
 
         purchases = Purchase.objects.filter(customer__shop=shop).order_by(
@@ -106,7 +110,12 @@ class CustomerStatementView(APIView):
     permission_classes = (IsCashierOrAbove,)
 
     def get(self, request, customer_id):
-        customer = get_object_or_404(Customer, id=customer_id, shop=request.user.shop, is_active=True,)
+        customer = get_object_or_404(
+            Customer,
+            id=customer_id,
+            shop=request.user.shop,
+            is_active=True,
+        )
         transactions = []
         purchases = Purchase.objects.filter(customer=customer)
         payments = Payment.objects.filter(customer=customer)
@@ -114,8 +123,10 @@ class CustomerStatementView(APIView):
         for purchase in purchases:
             transactions.append(
                 {
+                    "id": purchase.id,
                     "type": "purchase",
                     "date": purchase.purchase_date,
+                    "created_at": purchase.created_at.isoformat(),
                     "amount": float(purchase.total_amount),
                 }
             )
@@ -123,13 +134,34 @@ class CustomerStatementView(APIView):
         for payment in payments:
             transactions.append(
                 {
+                    "id": payment.id,
                     "type": "payment",
                     "date": payment.payment_date,
+                    "created_at": payment.created_at.isoformat(),
                     "amount": float(payment.amount),
                 }
             )
 
-        transactions = sorted(transactions, key=lambda x: x["date"])
+        transactions = sorted(
+            transactions,
+            key=lambda x: (
+                x["created_at"],
+                x["id"],
+            ),
+        )
+        
+        running_balance = 0
+
+        for transaction in transactions:
+            if transaction["type"] == "purchase":
+                running_balance += transaction["amount"]
+            else:
+                running_balance -= transaction["amount"]
+
+            transaction["running_balance"] = running_balance
+
+        for transaction in transactions:
+            transaction.pop("created_at", None)
 
         return Response(
             {
