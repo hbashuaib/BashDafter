@@ -3,6 +3,8 @@ from django.db import models
 
 class Unit(models.Model):
     name = models.CharField(max_length=50, unique=True,)
+    name_en = models.CharField(max_length=50, blank=True, default="",)
+    name_ar = models.CharField(max_length=50, blank=True, default="",)
     description = models.TextField(blank=True,)
     created_at = models.DateTimeField(auto_now_add=True,)
 
@@ -12,6 +14,8 @@ class Unit(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True,)
+    name_en = models.CharField(max_length=100, blank=True, default="",)
+    name_ar = models.CharField(max_length=100, blank=True, default="",)
     description = models.TextField(blank=True,)
     created_at = models.DateTimeField(auto_now_add=True, )
 
@@ -24,6 +28,8 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True,)
     unit = models.ForeignKey(Unit, on_delete=models.SET_NULL, null=True, blank=True,)
     name = models.CharField(max_length=255,)
+    name_en = models.CharField(max_length=255, blank=True, default="",)
+    name_ar = models.CharField(max_length=255, blank=True, default="",)
     barcode = models.CharField(max_length=100, unique=True, blank=True, null=True,)
     description = models.TextField(blank=True,)
     cost_price = models.DecimalField(max_digits=12, decimal_places=2, default=0,)

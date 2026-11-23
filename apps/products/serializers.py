@@ -11,15 +11,34 @@ from .models import (
 
 
 class UnitSerializer(serializers.ModelSerializer):
+    display_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Unit
         fields = "__all__"
 
+    def get_display_name(self, obj):
+        return (
+            obj.name_en
+            or obj.name_ar
+            or obj.name
+        )
+
 
 class CategorySerializer(serializers.ModelSerializer):
+    display_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Category
         fields = "__all__"
+
+    def get_display_name(self, obj):
+        return (
+            obj.name_en
+            or obj.name_ar
+            or obj.name
+        )
+
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -28,6 +47,7 @@ class ProductSerializer(serializers.ModelSerializer):
     is_low_stock = serializers.BooleanField(read_only=True,)
     total_sold = serializers.SerializerMethodField()
     total_adjustments = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -47,4 +67,11 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_total_adjustments(self, obj,):
         return (
             obj.stock_adjustments.count()
+        )
+    
+    def get_display_name(self, obj):
+        return (
+            obj.name_en
+            or obj.name_ar
+            or obj.name
         )
