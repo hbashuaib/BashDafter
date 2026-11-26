@@ -7,6 +7,10 @@ class Unit(models.Model):
     name_ar = models.CharField(max_length=50, blank=True, default="",)
     description = models.TextField(blank=True,)
     created_at = models.DateTimeField(auto_now_add=True,)
+    
+    def save(self, *args, **kwargs):
+        self.name = self.name_en.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -18,6 +22,10 @@ class Category(models.Model):
     name_ar = models.CharField(max_length=100, blank=True, default="",)
     description = models.TextField(blank=True,)
     created_at = models.DateTimeField(auto_now_add=True, )
+    
+    def save(self, *args, **kwargs):
+        self.name = self.name_en.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -41,6 +49,10 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True,)
     created_at = models.DateTimeField(auto_now_add=True,)
     updated_at = models.DateTimeField(auto_now=True,)
+    
+    def save(self, *args, **kwargs):
+        self.name = self.name_en.strip()
+        super().save(*args, **kwargs)
     
     @property
     def is_low_stock(self):

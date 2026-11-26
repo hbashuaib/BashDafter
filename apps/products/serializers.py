@@ -16,6 +16,14 @@ class UnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Unit
         fields = "__all__"
+    
+    def validate(self, attrs):
+            if not attrs.get("name_en", "").strip():
+                raise serializers.ValidationError({
+                    "name_en": "English name is required."
+                })
+    
+            return attrs
 
     def get_display_name(self, obj):
         return (
@@ -31,6 +39,14 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = "__all__"
+    
+    def validate(self, attrs):
+            if not attrs.get("name_en", "").strip():
+                raise serializers.ValidationError({
+                    "name_en": "English name is required."
+                })
+    
+            return attrs
 
     def get_display_name(self, obj):
         return (
@@ -53,6 +69,14 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = "__all__"
         read_only_fields = ("shop",)
+        
+    def validate(self, attrs):
+        if not attrs.get("name_en", "").strip():
+            raise serializers.ValidationError({
+                "name_en": "English name is required."
+            })
+
+        return attrs
         
     def get_total_sold(self, obj):
         return (
